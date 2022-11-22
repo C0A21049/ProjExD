@@ -1,66 +1,90 @@
-import random
-import time
 
-#グローバル変数定義
-num_of_alphabet = 26 #全アルファベット数
-num_of_all_chars = 10 #対象文字数
-num_of_abs_chars = 2 #欠損文字数
-num_of_trials = 2 #最大繰り返し回数
+from random import randint as rd
 
-def shutudai(alphabet):
-    #全アルファベットから対象文字を10個選択する。(重複なし)
-    all_chars = random.sample(alphabet, num_of_all_chars)
-    print("対象文字：")
-    for c in all_chars:
-        print(c, end=" ")
-    print()
+#重複ないか探す
+def search(a, c, l):#a=今の数c=検索対象l=検索するリスト
+    for i in range(0,a):
+        if c == l[i]:
+            return 1
 
-    #対象文字から欠損文字を2個選択する。(重複なし)
-    abs_chars = random.sample(all_chars, num_of_abs_chars)
-    print("欠損文字(デバッグ用)：")
-    for c in abs_chars:
-        print(c, end=" ")
-    print()
-
-    print("表示文字：")
-    for c in all_chars:
-        #abs_chars に含まれていなければ表示文字として表示する
-        if c not in abs_chars:
-           print(c, end=" ")
-    print()
-
-    return abs_chars
-
-
-def kaitou(abs_chars):
-    num = int(input("欠損文字はいくつあるでしょうか？："))
-    if num != num_of_abs_chars:
-        print("不正解です。")
-    else:
-        print("正解です。それでは、具体的に欠損文字を1つずつ入力してください。")
-        for i in range(num):
-            ans = input(f"{i + 1}つ目の文字を入力してください：")
-            if ans not in abs_chars:
-                print("不正解です。")
-                return False
-            else:
-                abs_chars.remove(ans)
-
-        print("全部正解です。")
-        return True
-            
-
-if __name__ == "__main__":
-    st = time.time()
-    alphabet = [chr(i + 65) for i in range(num_of_alphabet)]
-    print(alphabet)
-    for _ in range(num_of_trials):
-        abs_chars = shutudai(alphabet)
-        ret = kaitou(abs_chars)
-        if ret:
+# ２回目の質問をする
+def next_quiz(sub_tup, res_tup):
+    amount = sub_tup[1]
+    lost_str_list = res_tup[1]
+    lost_amount = res_tup[2]
+    ans_next_quiz =[]
+    for i in range (lost_amount):
+        ans = input(str(i+1)+"つ目の文字を入力してください：")
+        ans_next_quiz.append(ans)
+        result_ans_next_quiz = search(amount, ord(ans), lost_str_list)
+        if result_ans_next_quiz != 1:
             break
-        else:
-            print("-"*20)
+        result_str_ans_next_quiz = search(amount, ord(ans), ans_next_quiz)
+        if result_str_ans_next_quiz == 1:
+            break
+        if i == lost_amount:
+            print("正解です。")
+            return 0
+    print("不正解です。またチャレンジしてください")
 
-    ed = time.time()
-    print(f"所要時間：{(ed-st):.2f}秒")
+# 質問する
+def quiz(res_tup):
+    lost_amount = res_tup[2]
+    ans_num = input("欠損文字はいくつあるでしょうか？")
+    if ans_num == lost_amount:
+        print("正解です。それでは、具体的に欠損文字を１つずつ入力してください")
+        next = 0
+    else:
+        print("不正解です。またチャレンジしてください")
+        next = 1
+    return next
+
+# 表示される文字の表示
+def display(str_list):
+    print("表示文字：")
+    for dp_str in str_list:
+        print(str_list[dp_str])
+
+#欠損文字を決める
+def defect(stuple):
+    print("欠損文字：")
+    str_list = stuple[0]
+    amount = stuple[1]
+    lost_str_list = []
+    for lost_amount in range(rd(1,amount-1)):
+        lost_str = rd(str_list)
+        next = search(amount, lost_str, lost_str_list)
+        if next == 1:
+            continue
+        lost_str_list.append(str_list.pop[lost_str])
+        print(chr(lost_str_list[lost_str]))
+    return str_list, lost_str_list, lost_amount
+
+# 問題の解答作成
+def result_maker(sub_tup):
+    def_tup = defect(sub_tup)
+    display(def_tup[0])
+    return def_tup
+
+#対象文字を決める
+def subject():
+    print("対象文字：")
+    str_list = []
+    for amount in range(rd(2,26)):
+        str_code = range(rd(65,90))
+        next = search(amount, str_code, str_list)
+        if next == 1:
+            continue
+        str_list.append(str_code)
+        print(chr(str_list[amount]))
+    return str_list, amount
+
+#消えたアルファベットを探すゲーム
+if __name__ == "__main__":
+    next_quiz = 1
+    subject_tuple = subject()
+    result_tuple = result_maker(subject_tuple)
+    next_quiz = quiz(result_tuple)
+    if next_quiz == 0:
+        next_quiz(subject_tuple, result_tuple)
+    
