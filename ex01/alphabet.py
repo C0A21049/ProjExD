@@ -81,9 +81,9 @@ def subject():
 #消えたアルファベットを探すゲーム
 if __name__ == "__main__":
     next_quiz = 1
-    subject_tuple = subject()
-    result_tuple = result_maker(subject_tuple)
-    next_quiz = quiz(result_tuple)
+    sub_tup = subject()
+    res_tup = result_maker(sub_tup)
+    next_quiz = quiz(res_tup)
     if next_quiz == 0:
-        next_quiz(subject_tuple, result_tuple)
+        next_quiz(sub_tup, res_tup)
     
