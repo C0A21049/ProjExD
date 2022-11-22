@@ -1,4 +1,3 @@
-
 from random import randint as rd
 
 #重複ないか探す
