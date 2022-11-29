@@ -5,8 +5,15 @@ def button_click(event):
     btn = event.widget
     txt = btn["text"]
     #tkm.showinfo(txt, f"[{txt}のボタンがクリックされました]")
-    #6
-    entry.insert(tk.END, num)
+    #7
+    if txt == "=":
+        siki = entry.get()
+        res = eval(siki)
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, res)
+    else: # 「=」以外のボタン字
+        # 6
+        entry.insert(tk.END, num)
 
 #1
 root = tk.Tk()
