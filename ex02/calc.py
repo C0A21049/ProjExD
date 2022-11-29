@@ -1,52 +1,50 @@
 import tkinter as tk
 import tkinter.messagebox as tkm
-#3
+
+
 def button_click(event):
     btn = event.widget
     txt = btn["text"]
-    #tkm.showinfo(txt, f"[{txt}のボタンがクリックされました]")
-    #7
+    
     if txt == "=":
         siki = entry.get()
         res = eval(siki)
         entry.delete(0, tk.END)
         entry.insert(tk.END, res)
-    else: # 「=」以外のボタン字
-        # 6
+    else: 
         entry.insert(tk.END, txt)
 
-#1
+
 root = tk.Tk()
 root.title("calc.py")
-root.geometry("300x500")
+root.geometry("400x500")
 
-#4
+
 entry = tk.Entry(justify = "right", width = 10, font = ("", 40))
-entry.grid(row = 0, column = 0, columnspan = 3)
+entry.grid(row = 0, column = 0, columnspan = 6)
 
-#2
+
 r, c = 1, 0
-for num in range(9, -1, -1):
-    button = tk.Button(root, text=f"{num}", width=4, height=2, font=("", 30))
-    button.grid(row=r, column=c)
+operators = ["+", "-", "*", "/", "="]
+for num in range(9, -3, -1):
+    ope = operators[r-1]
+    if num >= 0:
+        button = tk.Button(root, text=f"{num}", width=4, height=2, font=("", 30))
+        button.grid(row=r, column=c)
+    elif num == -2:
+        button = tk.Button(root, text=f"{operators[-1]}", width=4, height=2, font=("", 30))
+        button.grid(row=r, column=c)
+    else:
+        button = tk.Button(root, text="", width=4, height=2, font=("", 30))
+        button.grid(row=r, column=c)
+    button.bind("<1>", button_click)
     c += 1
     if c%3 == 0:
+        button = tk.Button(root, text=f"{ope}", width=4, height=2, font=("", 30))
+        button.grid(row=r, column=c)
         r += 1
         c = 0
-    
-    #3
-    button.bind("<1>", button_click)
+        button.bind("<1>", button_click)
 
-#5
-operators = ["+", "="]
-for ope in operators:
-    button = tk.Button(root, text=f"{ope}", width=4, height=2, font=("", 30))
-    button.grid(row=r, column=c)
-    c += 1
-    if c%3 == 0:
-        r += 1
-        c = 0
-    #6
-    button.bind("<1>", button_click)
 
 root.mainloop()
