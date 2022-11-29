@@ -1,5 +1,10 @@
 import tkinter as tk
 import tkinter.messagebox as tkm
+#3
+def button_click(event):
+    btn = event.widget
+    txt = btn["text"]
+    tkm.showinfo(txt, f"[{txt}のボタンがクリックされました]")
 
 #1
 root = tk.Tk()
@@ -18,5 +23,8 @@ for i in range(10):
         button.grid(row = 8-(4*(i//3)), column = 2)
     elif i%3 == 1:
         button.grid(row = 8-(4*(i//3)), column = 4)
+    
+    #3
+    button.bind("<1>", button_click)
 
 root.mainloop()
