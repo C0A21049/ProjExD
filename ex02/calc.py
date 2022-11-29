@@ -13,7 +13,7 @@ def button_click(event):
         entry.insert(tk.END, res)
     else: # 「=」以外のボタン字
         # 6
-        entry.insert(tk.END, num)
+        entry.insert(tk.END, txt)
 
 #1
 root = tk.Tk()
