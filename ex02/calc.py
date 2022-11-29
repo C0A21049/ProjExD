@@ -4,7 +4,9 @@ import tkinter.messagebox as tkm
 def button_click(event):
     btn = event.widget
     txt = btn["text"]
-    tkm.showinfo(txt, f"[{txt}のボタンがクリックされました]")
+    #tkm.showinfo(txt, f"[{txt}のボタンがクリックされました]")
+    #6
+    entry.insert(tk.END, num)
 
 #1
 root = tk.Tk()
@@ -37,5 +39,7 @@ for ope in operators:
     if c%3 == 0:
         r += 1
         c = 0
+    #6
+    button.bind("<1>", button_click)
 
 root.mainloop()
