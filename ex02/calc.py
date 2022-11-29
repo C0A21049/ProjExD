@@ -25,13 +25,16 @@ entry.grid(row = 0, column = 0, columnspan = 6)
 
 
 r, c = 1, 0
-operators = ["+", "-", "*", "/", "="]
+operators = ["+", "-", "*", "/", "=", "."]
 for num in range(9, -3, -1):
     ope = operators[r-1]
     if num >= 0:
         button = tk.Button(root, text=f"{num}", width=4, height=2, font=("", 30))
         button.grid(row=r, column=c)
     elif num == -2:
+        button = tk.Button(root, text=f"{operators[num]}", width=4, height=2, font=("", 30))
+        button.grid(row=r, column=c)
+    elif num == -1:
         button = tk.Button(root, text=f"{operators[-1]}", width=4, height=2, font=("", 30))
         button.grid(row=r, column=c)
     else:
