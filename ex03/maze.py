@@ -1,5 +1,4 @@
 import tkinter as tk
-
 #8
 import random
 import maze_maker as mm
