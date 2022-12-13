@@ -106,6 +106,7 @@ def main(tori_x, tori_y):
 
         scrn_sfc.blit(tori_sfc, tori_rct) 
 
+        #速度をランダムに変化させる
         i += 1
         if i > 10000:
             i = 1
