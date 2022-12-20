@@ -2,13 +2,17 @@ import pygame as pg
 import random
 import sys
 import os
+
+
 #音楽を入れる
 main_dir = os.path.split(os.path.abspath(__file__))[0]
+
 
 #終了
 def quit():
     pg.quit()
     sys.exit()
+
 
 class Screen:
     def __init__(self, title, wh, img_path):
@@ -90,6 +94,7 @@ class Bomb:
             self.vy *= tate
         self.blit(scr)
 
+
 class enemy:
     def __init__(self, color, rad, vxy, scr:Screen):
         self.sfc = pg.Surface((2*rad, 2*rad)) # 正方形の空のSurface
@@ -126,6 +131,18 @@ class enemy:
         self.blit(scr)
 
 
+# テキストの設定 
+class Text: 
+    def __init__(self): 
+        #リスタートを促す文字を表示する
+        self.tmr = "Press the 'r' key and try again!"
+        self.fonto = pg.font.Font(None, 80)
+        self.txt = self.fonto.render(self.tmr, True, (0,0,0))
+
+    def blit(self, scr:Screen):
+        scr.sfc.blit(self.txt, (400,400))
+
+
 def check_bound(obj_rct, scr_rct):
     """
     第1引数：こうかとんrectまたは爆弾rect
@@ -139,6 +156,7 @@ def check_bound(obj_rct, scr_rct):
         tate = -1
     return yoko, tate
 
+
 def finish(scr:Screen, kkt:Bird, bkd:Bomb):
     global move
     #動けなくなる
@@ -149,30 +167,23 @@ def finish(scr:Screen, kkt:Bird, bkd:Bomb):
     kkt.rct.center = (first_x, first_y)
     scr.sfc.blit(kkt.sfc, kkt.rct)
     bkd.vx, bkd.vy = 0, 0
-    #リスタートを促す文字を表示する
-    tmr = "Press the 'r' key and try again!"
-    fonto = pg.font.Font(None, 80)
-    txt = fonto.render(tmr, True, (0,0,0))
-    scr.sfc.blit(txt, (400,400))
-
+    text = Text()
+    text.blit(scr)
+    
 
 def main():
     global clock
     clock =pg.time.Clock()
-
     #音楽を流す
     if pg.mixer:
         music = os.path.join(main_dir, "data", "house_lo.wav")
         pg.mixer.music.load(music)
         pg.mixer.music.play(-1)
-
     # 練習１
     scr = Screen("負けるな！こうかとん", (1600,900), "../fig/pg_bg.jpg")
-
     # 練習３
     kkt = Bird("../fig/6.png", 2.0, (first_x,first_y))
     kkt.update(scr)
-
     # 練習５
     vx = 1
     vy = 1
@@ -180,22 +191,17 @@ def main():
     bkd.update(scr)
     emy = enemy((0, 0, 255), 20, (vx, vy), scr)
     emy.update(scr)
-
     # 練習２
     while True:        
         scr.blit()
-
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 quit()
-
         kkt.update(scr)
         bkd.update(scr)
         emy.update(scr)
         if kkt.rct.colliderect(bkd.rct) or kkt.rct.colliderect(emy.rct):
             finish(scr, kkt, bkd)
-            
-
         pg.display.update()
         clock.tick(1000)
 
