@@ -36,7 +36,7 @@ class Bird:
         self.rct = self.sfc.get_rect()
         self.rct.center = xy
         #着弾した時のこうかとん
-        self.end_sfc = pg.image.load("fig/8.png")
+        self.end_sfc = pg.image.load("../fig/8.png")
         self.end_sfc = pg.transform.rotozoom(self.end_sfc, 0, 2.0)
         self.end_rct = self.end_sfc.get_rect()
 
@@ -48,6 +48,9 @@ class Bird:
         key_dct = pg.key.get_pressed()
         for key, delta in Bird.key_delta.items():
             if move:
+                #スローにする能力
+                if key_dct[pg.K_SPACE]:
+                    clock.tick(1000)
                 if key_dct[key]:
                     self.rct.centerx += delta[0]
                     first_x += delta[0]
@@ -87,6 +90,41 @@ class Bomb:
             self.vy *= tate
         self.blit(scr)
 
+class enemy:
+    def __init__(self, color, rad, vxy, scr:Screen):
+        self.sfc = pg.Surface((2*rad, 2*rad)) # 正方形の空のSurface
+        self.sfc.set_colorkey((0, 0, 0))
+        pg.draw.circle(self.sfc, color, (rad, rad), rad)
+        self.rct = self.sfc.get_rect()
+        self.rct.centerx = random.randint(0, scr.rct.width)
+        self.rct.centery = random.randint(0, scr.rct.height)
+        self.vx, self.vy = vxy
+
+    def blit(self, scr:Screen):
+        scr.sfc.blit(self.sfc, self.rct)
+
+    def update(self, scr:Screen):
+        global i        
+        #速度をランダムに変化させる
+        i += 1
+        if i > 10000:
+            i = 1
+        if move and i%2 == 0.0:
+            self.rct.move_ip(self.vx, self.vy)
+            ver = random.randint(1,5)
+            if ver == 1:
+                self.vx = self.vx+random.uniform(0.1,0.5)
+            if ver == 2:
+                self.vx = self.vx-random.uniform(0.1,0.5)
+            if ver == 3:
+                self.vy = self.vy+random.uniform(0.1,0.5)
+            if ver == 4:
+                self.vy = self.vy-random.uniform(0.1,0.5)
+            yoko, tate = check_bound(self.rct, scr.rct)
+            self.vx *= yoko
+            self.vy *= tate
+        self.blit(scr)
+
 
 def check_bound(obj_rct, scr_rct):
     """
@@ -119,6 +157,7 @@ def finish(scr:Screen, kkt:Bird, bkd:Bomb):
 
 
 def main():
+    global clock
     clock =pg.time.Clock()
 
     #音楽を流す
@@ -128,10 +167,10 @@ def main():
         pg.mixer.music.play(-1)
 
     # 練習１
-    scr = Screen("負けるな！こうかとん", (1600,900), "fig/pg_bg.jpg")
+    scr = Screen("負けるな！こうかとん", (1600,900), "../fig/pg_bg.jpg")
 
     # 練習３
-    kkt = Bird("fig/6.png", 2.0, (first_x,first_y))
+    kkt = Bird("../fig/6.png", 2.0, (first_x,first_y))
     kkt.update(scr)
 
     # 練習５
@@ -139,6 +178,8 @@ def main():
     vy = 1
     bkd = Bomb((255, 0, 0), 10, (vx, vy), scr)
     bkd.update(scr)
+    emy = enemy((0, 0, 255), 20, (vx, vy), scr)
+    emy.update(scr)
 
     # 練習２
     while True:        
@@ -150,7 +191,8 @@ def main():
 
         kkt.update(scr)
         bkd.update(scr)
-        if kkt.rct.colliderect(bkd.rct):
+        emy.update(scr)
+        if kkt.rct.colliderect(bkd.rct) or kkt.rct.colliderect(emy.rct):
             finish(scr, kkt, bkd)
             
 
@@ -161,6 +203,8 @@ def main():
 if __name__ == "__main__":
     pg.init()
     move = True
+    clock  = 0
+    i = 0
     #こうかとんの初期位置
     first_x = 900
     first_y = 400
