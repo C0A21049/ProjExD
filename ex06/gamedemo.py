@@ -19,6 +19,16 @@ class Screen:
     
     def blit(self):
         self.sfc.blit(self.bgi_sfc, self.bgi_rct)
+    
+
+# 背景の設定
+class BackGround:
+    def __init__(self, file, xy):
+        self.sfc = pg.image.load(file)
+        self.rct = self.sfc.get_rect()
+        self.rct.center = xy
+    def blit(self, scn):
+        scn.sfc.blit(self.sfc, self.rct)
 
 
 # 操作キャラの設定
@@ -56,7 +66,8 @@ class Bird:
                 if key_dct[pg.K_r]:
                     move = True
                     out_fin = False#場外判定を消す c0a21049
-                    self.change_image("fig/6.png")#画像を元に戻す c0a21049
+                    #self.change_image("fig/6.png")#画像を元に戻す c0a21049
+                    main()
         self.blit(scr)
     
     # 画像の変更
@@ -72,87 +83,138 @@ class Bomb:
         self.sfc.set_colorkey((0, 0, 0))
         pg.draw.circle(self.sfc, col, (r, r), r)
         self.rct = self.sfc.get_rect()
-        self.rct.centerx = random.randint(0, scr.rct.width)
-        self.rct.centery = random.randint(scr.rct.height-500, scr.rct.height)
-        self.vx = sp[0]
-        self.vy = sp[1]
+
+        pos = random.randint(0, 3)  #爆弾の飛んでくる方向(左,上,右,下)
+        rad_x = random.randint(0, scr.rct.width)
+        rad_y = random.randint(scr.rct.height-500, scr.rct.height)
+        bombx = [10, rad_x, scr.rct.width-10, rad_x]    #飛んでくる方向によって
+        bomby = [rad_y, 410, rad_y, scr.rct.height-10]  #爆弾の進む向き、初期位置を設定
+        vx = [1, sp[0], -1, sp[0]]
+        vy = [sp[1], 1, sp[1], -1]
+        self.rct.centerx = bombx[pos]
+        self.rct.centery = bomby[pos]
+        self.vx = vx[pos]
+        self.vy = vy[pos]
     
     def blit(self, scr):
         scr.sfc.blit(self.sfc, self.rct)
     
-    def update(self, scr):
+    #爆弾の移動
+    def update(self, scr, bmlist):
         self.rct.move_ip(self.vx, self.vy)
         yoko, tate = check_bound(self.rct, scr.rct)
-        self.vx *= yoko
-        self.vy *= tate
+        #爆弾が端に到達したとき C0A21035
+        if (yoko == -1) or (tate == -1):
+            self.restart(scr)
         self.blit(scr)
 
-    def stop(self, scr):
-        self.vx = 0
-        self.vy = 0
-        self.rct.centerx = scr.rct.width + 50
-        self.rct.centery = scr.rct.height + 50
-        self.blit(scr)
+    #爆弾の位置の再設定 C0A21035
+    def restart(self, scr):
+        pos = random.randint(0, 3)
+        x = random.choice([-1, 1])
+        y = random.choice([-1, 1])
+        rad_x = random.randint(0, scr.rct.width)
+        rad_y = random.randint(scr.rct.height-500, scr.rct.height)
+        bombx = [10, rad_x, scr.rct.width-10, rad_x]
+        bomby = [rad_y, 410, rad_y, scr.rct.height-10]
+        vx = [1, x, -1, x]
+        vy = [y, 1, y, -1]
+        self.rct.centerx = bombx[pos]
+        self.rct.centery = bomby[pos]
+        self.vx = vx[pos]
+        self.vy = vy[pos]
 
 
-# 跳ね返りの確認
+# 画面端にぶつかったか検知
 def check_bound(obj_rct, scr_rct):
     yoko, tate = +1, +1
     if obj_rct.left < scr_rct.left or scr_rct.right < obj_rct.right:
         yoko = -1
-    if obj_rct.top < scr_rct.top + 400 or scr_rct.bottom < obj_rct.bottom:
+    if obj_rct.top < scr_rct.bottom - 500 or scr_rct.bottom < obj_rct.bottom:
         tate = -1
     return yoko, tate
 
 
+#バリアの設定 C0A21035
+class Protecter:
+
+    key_delta = {
+        pg.K_UP:    [0, -1],
+        pg.K_DOWN:  [0, +1],
+        pg.K_LEFT:  [-1, 0],
+        pg.K_RIGHT: [+1, 0],}
+
+    def __init__(self, rate, bird):
+        self.rate = rate
+        self.sfc = pg.image.load("fig/barrior.png")
+        self.sfc = pg.transform.rotozoom(self.sfc, 0, self.rate)
+        self.rct = self.sfc.get_rect()
+        self.rct.center = bird.rct.centerx, bird.rct.centery
+        self.count = 3
+    
+    def blit(self, scn):
+        scn.sfc.blit(self.sfc, self.rct)
+
+    #操作キャラに合わせたバリアの移動
+    def update(self, scr, tori):
+        if self.count <= 0:
+            self.delete(scr)
+            return
+        self.rct.centerx = tori.rct.centerx
+        self.rct.centery = tori.rct.centery
+        self.blit(scr)
+    
+    #画面上からバリアを消去
+    def delete(self, scr):
+        self.rct.centerx = 2000
+        self.rct.centery = 2000
+
+
 def main():
     global move#移動許可の変更 c0a21049
-    clock =pg.time.Clock()
+    clock = pg.time.Clock()
     # スクリーンの表示
-    SR = Screen("危ない！こうかとん", (600, 900), "fig/bg.png")
-    gd_sfc = pg.image.load("fig/gd.png")
-    gd_rct = gd_sfc.get_rect()
-    gd_rct.center = SR.rct.right/2, SR.rct.bottom-250
+    SR = Screen("戦え！こうかとん", (600, 900), "fig/bg.png")
+    GD = BackGround("fig/gd.png", (SR.rct.right/2, SR.rct.bottom-250))
 
-    # 操作キャラ、剣表示
-    tori = Bird("fig/6.png", 2.0, (300, 675))
+    # 操作キャラ表示
+    tori = Bird("fig/6.png", 1.0, (200, 600))
     tori.update(SR)
 
-    #爆弾の色設定、進行方向の設定、表示
-    colors = ["Red", "Blue", "Green", "Yellow", "Purple"]
+    # バリア表示 C0A21035
+    prot = Protecter(1.0, tori)
+    prot.update(SR, tori)
+
+    # 爆弾設定・表示
     bombs = []
-    num = 1
+    num = 15
     for i in range(num):
         vx = random.choice([-1, 1])
         vy = random.choice([-1, 1])
-        color = colors[i % 5]
-        bombs.append(Bomb(color, 10, (vx, vy), SR))
-        bombs[i].update(SR)
+        bombs.append(Bomb("blue", 5, (vx, vy), SR))
+        bombs[i].update(SR, bombs)
 
     while True:
         SR.blit()
-        SR.sfc.blit(gd_sfc, gd_rct)
-        #終了を判別する
+        GD.blit(SR)
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                quit()
+                return
         
-        # 操作キャラ・剣の位置更新
+        # 操作キャラの位置更新
         tori.update(SR)
+        prot.update(SR, tori)
 
-        # # 陸上・空中によって画像変更
-        # if (tori.rct.centery < 450):
-        #     tori.change_image("fig/3.png")
-        # elif (tori.rct.centery >= 450):
-        #     tori.change_image("fig/5.png")
-
-        # ゲームオーバーの設定
         for bomb in bombs:
-            bomb.update(SR)
+            bomb.update(SR, bombs)
+            if prot.rct.colliderect(bomb.rct):  #バリアと爆弾がぶつかった時 C0A21035
+                bomb.restart(SR)
+                prot.count -= 1
             if tori.rct.colliderect(bomb.rct) or out_fin == True:
                 SR.blit()
-                SR.sfc.blit(gd_sfc, gd_rct)
-                tori = Bird("fig/10.png", 2.0, (300, 675))
+                GD.blit(SR)
+                tori = Bird("fig/10.png", 1.0, (300, 675))
                 tori.update(SR)
                 #リスタートを促す文字を表示する
                 tmr = "Press the 'r' key and try again!"
@@ -171,3 +233,5 @@ if __name__ == "__main__":
     move = True #移動許可 C0A21049
     out_fin = False #場外による終了 c0a21049
     main()
+    # pg.quit()
+    # sys.exit()
